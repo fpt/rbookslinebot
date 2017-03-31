@@ -1,0 +1,4 @@
+*.pyc
+data/pn_ja.dic
+.DS_Store
+config.ini
