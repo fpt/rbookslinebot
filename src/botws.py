@@ -26,7 +26,38 @@ app = flask.Flask(__name__, template_folder=tmpl_dir, static_folder=static_dir)
 def index():
     return "Hello world."
 
+
+@app.route("/rae_auth", methods=['GET'])
+def rae_auth():
+    p = {
+      'response_type': 'code',
+      'client_id': '1010340428247090313',
+      'scope': 'rakuten_favoritebookmark_read',
+      'redirect_uri': 'https://fjmt.me/books_line_bot/rae_auth_return'
+    }
+    r = requests.get('https://app.rakuten.co.jp/services/authorize', allow_redirects=False, params=p)
+    logging.info(r)
+    return redirect(r.headers['Location'], code=r.status_code)
+
+@app.route("/rae_auth_return", methods=['GET'])
+def rae_auth_return():
+    code = request.args.get('code', '')
+    d = {
+      'grant_type': 'authorization_code',
+      'client_id': '1010340428247090313',
+      'client_secret': '69d817923e05505b85577e2fb69d2ebedde8ad78',
+      'code': code,
+      'scope': 'rakuten_favoritebookmark_read',
+      'redirect_uri': 'https://fjmt.me/books_bot/rae_auth_return'
+    }
+    r = requests.post('https://app.rakuten.co.jp/services/token', data=d)
+    print(r)
+    json = r.json()
+    token = json['access_token']
+    return "Return. " + token
+
 # curl -v -H "Accept: application/json" -H "Content-type: application/json" -X POST -d '{"events":[{}]}' http:/localhost:5100/linebot_webhook/message 
+
 @app.route("/linebot_webhook/message", methods=['POST'])
 def on_message():
     assert(request.method == 'POST')
